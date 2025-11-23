@@ -1,4 +1,4 @@
-import { type Result, post} from "../base";
+import { type Result, post ,get} from "../base";
 
 export function queryPage<T>(data?: any): Promise<Result<T>> {
   return post("/product/page", data);
@@ -15,4 +15,8 @@ export function addSpec<T>(data?: any): Promise<Result<T>> {
 }
 export function updateSpec<T>(data?: any): Promise<Result<T>> {
   return post("/product/item/update", data);
+}
+
+export function merChatList<T>(data?: any): Promise<Result<T>> {
+  return get("/member/user/merchant", data);
 }

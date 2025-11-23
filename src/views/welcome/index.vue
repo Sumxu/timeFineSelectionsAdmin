@@ -10,10 +10,7 @@ import { ethers } from "ethers";
 const addressListRef = ref();
 const poolInfoRef = ref();
 
-onMounted(() => {
-    _getBalance();
-    _getHomeStatistics();
-});
+ 
 
 const pageData: any = reactive({
   usdtBalance: 0,
@@ -72,109 +69,7 @@ const _getHomeStatistics = () => {
 
 <template>
   <div>
-    <el-space wrap>
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>代理合约USDT余额</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ pageData.usdtBalance }} USDT</span>
-      </div>
-    </el-card>
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>代理合约CA余额</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ pageData.caBalance }} CA</span>
-      </div>
-    </el-card>
-
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>自动提现账户BNB余额</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ pageData.bnbWithdrawBalance }} BNB</span>
-      </div>
-    </el-card>
-
-
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>上链账户BNB余额</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ pageData.bnbBalance }} BNB</span>
-      </div>
-    </el-card>
-
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>众筹上链 BNB余额</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ pageData.CrowdFundingBalance }} BNB</span>
-      </div>
-    </el-card>
-  </el-space>
-
-
-  <el-space wrap style="margin-top: 24px;">
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>昨日节点业绩</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ fromWei(pageData.todayNodeAmount) }}</span>
-      </div>
-    </el-card>
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>今日节点业绩</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ fromWei(pageData.dayNodeAmount)  }}</span>
-      </div>
-    </el-card>
-
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>昨日门票业绩</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ fromWei(pageData.todayTicketAmount)  }}</span>
-      </div>
-    </el-card>
-
-
-    <el-card class="box-card" style="width: 320px">
-      <template #header>
-        <div class="card-header">
-          <span>今日门票业绩</span>
-        </div>
-      </template>
-      <div class="text item">
-        <span>{{ fromWei(pageData.dayTicketAmount) }}</span>
-      </div>
-    </el-card>
-  </el-space>
+ 
   </div>
 </template>
 

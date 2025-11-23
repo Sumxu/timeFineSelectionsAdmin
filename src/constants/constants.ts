@@ -158,8 +158,9 @@ export const payTypeMap: SelectOptionMap<string> = {
   3: "tusd"
 };
 export const classifyMap: SelectOptionMap<string> = {
+  0: "请选择",
   1: "安品区",
   2: "优品区",
-  3: "臻品区",
-  4: "兑换区"
+  4: "臻品区",
+  3: "兑换区"
 };

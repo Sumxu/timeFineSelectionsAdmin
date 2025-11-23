@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from "vue";
-import { ElMessageBox } from "element-plus";
+import { ElMessageBox, ElMessage } from "element-plus";
 import Upload from "@/components/upload/index.vue";
 import EditorBase from "@/components/EditorBase/index.vue";
+import { classifyMap } from "@/constants/constants";
 
 // props 类型
 interface GoodsInfoProps {
@@ -15,8 +16,9 @@ interface GoodsInfoProps {
         merchantName?: string;
         isHome?: boolean;
         classify?: string | number;
+        sort?: string | number
     };
-    classifyOptions?: Record<string, string>;
+    merChatList: Array<{ address: string; merchantName: string }>;
 }
 
 // props
@@ -52,27 +54,34 @@ const formData = reactive({
     merchantAddress: "",
     merchantName: "",
     isHome: false,
-    classify: "",
-     content: ""  // 新增字段
+    classify: 0,
+    sort: 0,
+    details: ""
 });
 
 // watch 初始数据变化（编辑或新增）
- watch(
-  () => props.initialData,
-  (newData) => {
-    if (newData) Object.assign(formData, { ...newData, details: newData.details || "" });
-    else {
-      formData.id = undefined;
-      formData.name = "";
-      formData.pic = [];
-      formData.merchantAddress = "";
-      formData.merchantName = "";
-      formData.isHome = false;
-      formData.classify = "";
-      formData.details = "";
-    }
-  },
-  { immediate: true }
+watch(
+    () => props.initialData,
+    (newData) => {
+        if (newData) {
+            Object.assign(formData, {
+                ...newData,
+                details: newData.details || "",
+                pic: newData.pic ? newData.pic.split(",") : []
+            });
+        } else {
+            formData.id = undefined;
+            formData.name = "";
+            formData.pic = [];
+            formData.merchantAddress = "";
+            formData.merchantName = "";
+            formData.isHome = false;
+            formData.classify = 0;
+            formData.details = "";
+            formData.sort = "";
+        }
+    },
+    { immediate: true }
 );
 
 // 关闭弹窗前确认
@@ -81,7 +90,14 @@ const handleBeforeClose = (done: () => void) => {
         .then(() => done())
         .catch(() => { });
 };
-
+const merchantChange=(val)=>{
+    console.log('val=merchantChange==',val)
+   const filterArray=props.merChatList.filter((item)=>item.address==val)
+   if(filterArray.length>0){
+    formData.merchantAddress=filterArray[0].address
+    formData.merchantName=filterArray[0].merchantName
+   }
+}
 // 取消按钮
 const handleCancel = () => {
     handleBeforeClose(() => {
@@ -91,7 +107,42 @@ const handleCancel = () => {
 
 // 提交表单
 const handleSubmit = () => {
-    emit("submit", { ...formData });
+    const fieldLabels: Record<string, string> = {
+        name: "商品名称",
+        merchantAddress: "商户地址",
+        merchantName: "商户名称",
+        isHome: "是否首页",
+        classify: "分类",
+        pic: "封面图片",
+        details: "富文本内容",
+        sort: '序号'
+    };
+
+    // 校验必填字段
+    for (const key in fieldLabels) {
+        const value = formData[key as keyof typeof formData];
+        if (
+            value === null ||
+            value === undefined ||
+            (typeof value === "string" && value.trim() === "") ||
+            (Array.isArray(value) && value.length === 0) ||
+            (key === "classify" && Number(value) === 0)
+        ) {
+            ElMessage.warning(`请填写${fieldLabels[key]}`);
+            return;
+        }
+    }
+    if (formData.details === '<p><br></p>') {
+        ElMessage.warning(`请填写富文本内容`);
+        return;
+    }
+
+    const dataToSubmit = {
+        ...formData,
+        pic: Array.isArray(formData.pic) ? formData.pic.join(",") : formData.pic
+    };
+
+    emit("submit", dataToSubmit);
     innerVisible.value = false;
 };
 </script>
@@ -100,16 +151,31 @@ const handleSubmit = () => {
     <el-dialog v-model="innerVisible" style="height: 700px;overflow-y: scroll;" title="商品信息" width="800px"
         :before-close="handleBeforeClose">
         <el-form label-width="100px">
+
             <el-form-item label="名称">
                 <el-input v-model="formData.name" placeholder="请输入商品名称" />
             </el-form-item>
 
+            <!-- 商户地址：可选择已有地址，也可输入 -->
             <el-form-item label="商户地址">
-                <el-input v-model="formData.merchantAddress" placeholder="请输入商户地址" />
+                <el-select v-model="formData.merchantAddress" placeholder="请选择商户地址" style="width: 300px" filterable
+                    allow-create clearable
+                    @change="merchantChange"
+                    >
+
+                    <!-- 自定义显示：商户名称: 地址 -->
+                    <template #label="{ label, value }">
+                        <span>{{ label }}: </span>
+                        <span style="font-weight: bold">{{ value }}</span>
+                    </template>
+
+                    <el-option v-for="item in props.merChatList" :key="item.merchantName" :label="item.merchantName"
+                        :value="item.address" />
+                </el-select>
             </el-form-item>
 
-            <el-form-item label="商户名称">
-                <el-input v-model="formData.merchantName" placeholder="请输入商户名称" />
+            <el-form-item label="商品排序">
+                <el-input v-model="formData.sort" placeholder="请输入序号" />
             </el-form-item>
 
             <el-form-item label="是否首页">
@@ -121,22 +187,26 @@ const handleSubmit = () => {
 
             <el-form-item label="分类">
                 <el-select v-model="formData.classify" placeholder="请选择分类">
-                    <el-option v-for="(label, key) in props.classifyOptions" :key="key" :label="label" :value="key" />
+                    <el-option v-for="(label, key) in classifyMap" :key="key" :label="label" :value="Number(key)" />
                 </el-select>
             </el-form-item>
 
             <el-form-item label="封面图片">
-                <Upload v-model="formData.pic" :limit="5" accept="image" type="image" label="上传封面" :show-list="true" />
+                <Upload v-model="formData.pic" :limit="3" :multiple="true" accept="image" type="image" label="上传封面"
+                    :show-list="true" />
             </el-form-item>
+
             <el-form-item label="富文本">
                 <EditorBase v-model="formData.details" />
             </el-form-item>
-            <template #footer>
-                <div class="dialog-footer">
-                    <el-button @click="handleCancel">取消</el-button>
-                    <el-button type="primary" @click="handleSubmit">提交</el-button>
-                </div>
-            </template>
+
         </el-form>
+
+        <template #footer>
+            <div class="dialog-footer">
+                <el-button @click="handleCancel">取消</el-button>
+                <el-button type="primary" @click="handleSubmit">提交</el-button>
+            </div>
+        </template>
     </el-dialog>
 </template>
