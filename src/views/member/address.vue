@@ -3,15 +3,12 @@ import { reactive, ref, onMounted, h } from "vue";
 import FormSearch from "@/components/opts/form-search.vue";
 import TableButtons from "@/components/opts/btns2.vue";
 import { PureTable } from "@pureadmin/table";
-import * as $userApi from "@/api/member/user";
+import * as $userApi from "@/api/member/address";
 import message from "@/utils/message";
-import { formatAddress, formatDate, fromWei, callContractMethod } from "@/utils/wallet";
+import { formatAddress, formatDate, fromWei } from "@/utils/wallet";
 import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
 import { userlevelConvert, levelConvert, userTypeConvert } from "@/constants/convert";
 import { ElMessageBox, ElSelect, ElOption } from "element-plus";
-import erc20Abi from "@/abi/erc20-abi";
-import { contractAddress } from "@/config/contract";
-
 const pageData: any = reactive({
   searchState: true,
   searchForm: {},
@@ -21,12 +18,6 @@ const pageData: any = reactive({
       label: "钱包地址",
       prop: "address",
       placeholder: "请输入钱包地址"
-    },
-    {
-      type: "input",
-      label: "上级地址",
-      prop: "parentAddress",
-      placeholder: "请输入上级地址"
     }
   ],
   dataSource: {
@@ -51,34 +42,29 @@ const pageData: any = reactive({
         width: "370px"
       },
       {
-        label: "上级地址",
-        prop: "parentAddress",
-        width: "370px"
-      },
-      { label: "当前等级", prop: "level", minWidth: "120px" },
-      { label: "用户类型", prop: "userType", minWidth: "120px", slot: "userTypeScope" },
-      {
-        label: "商家名称",
-        prop: "merchantName",
-        minWidth: "120px"
+        label: "名称",
+        prop: "name"
       },
       {
-        label: "用户投入",
-        prop: "myRerf",
-        minWidth: "120px",
-        slot: "myRerfScope"
+        label: "手机号码",
+        prop: "phone",
+        minWidth: '140px'
       },
-
-      { label: "直推人数", prop: "directCount", minWidth: "120px" },
-      { label: "团队人数", prop: "teamCount", minWidth: "120px" },
-      { label: "小区业绩", prop: "communityPerf", minWidth: "120px" },
       {
-        label: "团队业绩",
-        prop: "teamPerf",
-        minWidth: "120px"
+        label: "省",
+        prop: "province"
       },
-      { label: "注册时间", prop: "createTime", width: "180px", slot: "createTimeScope" },
-      { label: "操作", fixed: "right", slot: "operation", width: "120px" }
+      {
+        label: "市",
+        prop: "city"
+      },
+      {
+        label: "区",
+        prop: "area"
+      },
+      { label: "详细地址", prop: "details", minWidth: '160px' },
+      { label: "是否默认", prop: "isDefault", slot: "isDefaultScope",minWidth: '120px' },
+      { label: "创建时间", prop: "createTime", width: "180px", slot: "createTimeScope" },
     ],
     list: [],
     loading: false,
@@ -158,7 +144,7 @@ const btnClickHandle = (key: string) => {
 const handleUpdateLevel = (row: any) => {
   const status = ref<string | number>(row.level);
   const userStatus = ref<string | number>(row.level);
-  const address=row.address
+
   ElMessageBox({
     title: "修改等级",
     message: () =>
@@ -210,14 +196,15 @@ const handleUpdateLevel = (row: any) => {
       if (action === "confirm") {
         try {
           instance.confirmButtonLoading = true;
-          const res = await callContractMethod(
-            contractAddress.Store_Address,
-            erc20Abi.abi,
-            "setLevel",
-            [address,Number(userStatus.value)],
-            true
-          )
-          if (res) {
+
+          // 请求更新
+          const res = await $userApi.updateLevel({
+            address: row.address,
+            nodeLevel: status.value,
+            userLevel: userStatus.value // 添加了用户等级的传递
+          });
+
+          if (res.success) {
             message.success("操作成功");
             await _loadData();
             done();
@@ -271,22 +258,11 @@ onMounted(() => _loadData());
     <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="address" border
       stripe :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
       @page-current-change="handleChangeCurrentPage" @page-size-change="handleChangePageSize">
-      <template #levelScope="scope">
-        <span>{{ levelConvert(scope.row[scope.column.property]) }}</span>
-      </template>
-      <template #userTypeScope="scope">
-        <span>{{ userTypeConvert(scope.row[scope.column.property]) }}</span>
-      </template>
-
       <template #createTimeScope="scope">
         <span>{{ formatDate(scope.row[scope.column.property]).dateTime }}</span>
       </template>
-
-      <template #myRerfScope="scope">
-        <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
-      </template>
-      <template #operation="{ row }">
-        <el-link type="primary" @click="handleUpdateLevel(row)">修改等级</el-link>
+      <template #isDefaultScope="scope">
+        <span>{{ scope.row[isDefault]?'是':'否'}}</span>
       </template>
     </pure-table>
   </el-card>

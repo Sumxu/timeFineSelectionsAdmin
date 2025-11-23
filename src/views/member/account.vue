@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import { reactive, onMounted, ref } from "vue";
-
-//组件相关
+import { reactive, ref, onMounted, h } from "vue";
 import FormSearch from "@/components/opts/form-search.vue";
 import TableButtons from "@/components/opts/btns2.vue";
 import { PureTable } from "@pureadmin/table";
-
-//请求相关
-import * as $nodeRecordApi from "@/api/member/nodeRecord";
-
-//合约 工具相关
+import * as $userApi from "@/api/member/bill";
 import message from "@/utils/message";
 import { formatAddress, formatDate, fromWei } from "@/utils/wallet";
-const pidMap = {
-  0: "超级节点",
-  1: "大节点",
-  2: "小节点"
-}
+import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
+import { bizTypeConvert ,coinTypeConvert , userTypeConvert } from "@/constants/convert";
+import { ElMessageBox, ElSelect, ElOption } from "element-plus";
+
 const pageData: any = reactive({
   searchState: true,
   searchForm: {},
@@ -29,14 +22,16 @@ const pageData: any = reactive({
     },
     {
       type: "input",
-      label: "查询团队",
-      prop: "inviterAddress",
-      placeholder: "请输入团队地址"
-    },
+      label: "上级地址",
+      prop: "parentAddress",
+      placeholder: "请输入上级地址"
+    }
   ],
-  dataSource: {},
+  dataSource: {
+    levelOptions: levelOptions
+  },
   permission: {
-    query: ["member:node:page"]
+    query: ["defi:user:page"]
   },
   btnOpts: {
     size: "small",
@@ -51,26 +46,38 @@ const pageData: any = reactive({
       {
         label: "钱包地址",
         prop: "address",
+        width: "370px"
       },
-      { label: "节点名称", prop: "pid", slot: "pidScope" },
       {
-        label: "金额",
+        label: "代币类型",
+        prop: "coinType",
+        slot: "coinTypeScope"
+      },
+      {
+        label: "业务类型",
+        prop: "bizType",
+        slot: "bizTypeScope"
+      },
+      {
+        label: "额度",
         prop: "amount",
         slot: "amountScope"
       },
-      { label: "购买时间", prop: "createTime", slot: "createTimeScope" }
+      { label: "创建时间", prop: "createTime", width: "180px", slot: "createTimeScope" },
     ],
     list: [],
     loading: false,
     pagination: {
-      pageSize: 10,
-      defaultPageSize: 10,
+      pageSize: 50,
+      defaultPageSize: 50,
       currentPage: 1,
       total: 0,
-      background: true
+      background: true,
+      pageSizes: [50, 100, 200, 300, 500]
     }
   }
 });
+
 // 搜索表单变化
 const _updateSearchFormData = (data: any) => (pageData.searchForm = data);
 
@@ -92,11 +99,11 @@ const getQueryParams = () => ({
 
 // 获取表格数据
 const _loadData = (page?: number) => {
+  pageData.tableParams.list = []
   pageData.tableParams.loading = true;
   const query = getQueryParams();
   if (page) query.current = page;
-
-  $nodeRecordApi
+  $userApi
     .queryPage(query)
     .then((res: any) => {
       if (res.code === 200) {
@@ -133,7 +140,6 @@ const btnClickHandle = (key: string) => {
       break;
   }
 };
-
 onMounted(() => _loadData());
 </script>
 
@@ -143,19 +149,23 @@ onMounted(() => _loadData());
       @search-form="_updateSearchFormData" @search="_searchForm" @reset="_resetSearchForm" />
     <table-buttons :size="pageData.btnOpts.size" :left-btns="pageData.btnOpts.leftBtns"
       :right-btns="pageData.btnOpts.rightBtns" @click="btnClickHandle" />
-    <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="id" border stripe
-      :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
+    <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="address" border
+      stripe :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
       @page-current-change="handleChangeCurrentPage" @page-size-change="handleChangePageSize">
-      <!-- 数量 -->
-      <template #amountScope="scope">
-        <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
-      </template>
-       <template #pidScope="scope">
-        <span> {{ pidMap[scope.row.pid] }}</span>
-      </template>
-      <!-- 数量 -->
       <template #createTimeScope="scope">
         <span>{{ formatDate(scope.row[scope.column.property]).dateTime }}</span>
+      </template>
+
+      <template #coinTypeScope="scope">
+        <span>{{ coinTypeConvert(scope.row[scope.column.property]) }}</span>
+      </template>
+      
+      <template #bizTypeScope="scope">
+        <span>{{ bizTypeConvert(scope.row[scope.column.property]) }}</span>
+      </template>
+
+        <template #amountScope="scope">
+        <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
       </template>
     </pure-table>
   </el-card>

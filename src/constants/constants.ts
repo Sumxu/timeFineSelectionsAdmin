@@ -107,9 +107,7 @@ export const userlevelMap: SelectOptionMap<string> = {
   3: "F3",
   4: "F4",
   5: "F5",
-  6: "F6",
-  7: "F7",
-  8: "F8"
+  6: "F6"
 };
 export const levelMap: SelectOptionMap<string> = {
   0: "无",
@@ -118,8 +116,50 @@ export const levelMap: SelectOptionMap<string> = {
   3: "超级节点",
   4: "社区节点"
 };
-export const miningMachineEarningsMap: SelectOptionMap<string>= {
-  0: "无",
-  1: "算力矿机",
-  2: "爆块矿机"
+export const userTypeMap: SelectOptionMap<string> = {
+  0: "普通",
+  1: "安品商家",
+  2: "优品区",
+  3: "臻品区"
+};
+export const pledgeMap: SelectOptionMap<string> = {
+  1: "正常",
+  2: "结束"
+};
+export const coinTypeMap: SelectOptionMap<string> = {
+  1: "usdt",
+  2: "usd",
+  3: "tusd",
+  4: "tax",
+  5: "积分"
+};
+
+export const bizTypeMap: SelectOptionMap<string> = {
+  1: "积分释放",
+  2: "购买商品",
+  3: "提现",
+  4: "质押",
+  5: "赎回",
+  6: "质押收益",
+  7: "卖出商品",
+  8: "团队加速",
+  9: "平级加速",
+  10: "直推",
+  11: "间推"
+};
+export const orderMap: SelectOptionMap<string> = {
+  1: "已购买",
+  2: "已发货",
+  3: "已完成"
+};
+export const payTypeMap: SelectOptionMap<string> = {
+  1: "usdt",
+  2: "usd",
+  3: "tusd"
+};
+export const classifyMap: SelectOptionMap<string> = {
+  1: "安品区",
+  2: "优品区",
+  3: "臻品区",
+  4: "兑换区"
 };

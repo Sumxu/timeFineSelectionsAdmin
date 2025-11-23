@@ -5,8 +5,8 @@ import { type Result, post, put ,get} from "../base";
  * @param query .
  * @returns .
  */
-export function queryPage<T>(query?: any): Promise<Result<T>> {
-  return get("/user/page", query);
+export function queryPage<T>(data?: any): Promise<Result<T>> {
+  return post("/member/user/page", data);
 }
 
 export function updateLevel<T>(data?: any): Promise<Result<T>> {

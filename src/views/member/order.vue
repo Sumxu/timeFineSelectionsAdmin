@@ -3,16 +3,14 @@ import { reactive, ref, onMounted, h } from "vue";
 import FormSearch from "@/components/opts/form-search.vue";
 import TableButtons from "@/components/opts/btns2.vue";
 import { PureTable } from "@pureadmin/table";
-import * as $userApi from "@/api/member/user";
+import * as $userApi from "@/api/member/order";
 import message from "@/utils/message";
-import { formatAddress, formatDate, fromWei, callContractMethod } from "@/utils/wallet";
+import { formatAddress, formatDate, fromWei } from "@/utils/wallet";
 import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
-import { userlevelConvert, levelConvert, userTypeConvert } from "@/constants/convert";
-import { ElMessageBox, ElSelect, ElOption } from "element-plus";
-import erc20Abi from "@/abi/erc20-abi";
-import { contractAddress } from "@/config/contract";
-
+import { orderConvert, payTypeConvert, classifyConvert } from "@/constants/convert";
+import { ElMessageBox, ElSelect, ElOption, ElInput, ElMessage } from "element-plus";
 const pageData: any = reactive({
+  preserveExpanded: true,
   searchState: true,
   searchForm: {},
   searchField: [
@@ -21,12 +19,6 @@ const pageData: any = reactive({
       label: "钱包地址",
       prop: "address",
       placeholder: "请输入钱包地址"
-    },
-    {
-      type: "input",
-      label: "上级地址",
-      prop: "parentAddress",
-      placeholder: "请输入上级地址"
     }
   ],
   dataSource: {
@@ -51,33 +43,35 @@ const pageData: any = reactive({
         width: "370px"
       },
       {
-        label: "上级地址",
-        prop: "parentAddress",
-        width: "370px"
+        label: "订单编号",
+        prop: "orderSn",
+        minWidth: "220px"
       },
-      { label: "当前等级", prop: "level", minWidth: "120px" },
-      { label: "用户类型", prop: "userType", minWidth: "120px", slot: "userTypeScope" },
+      { label: "图片", prop: "pic", slot: "imgScope", minWidth: "120px" },
+      { label: "商品名称", prop: "name", minWidth: "320px" },
       {
-        label: "商家名称",
-        prop: "merchantName",
-        minWidth: "120px"
+        label: "价格",
+        prop: "price"
       },
       {
-        label: "用户投入",
-        prop: "myRerf",
+        label: "状态",
+        prop: "status",
         minWidth: "120px",
-        slot: "myRerfScope"
+        slot: "statusScope"
       },
-
-      { label: "直推人数", prop: "directCount", minWidth: "120px" },
-      { label: "团队人数", prop: "teamCount", minWidth: "120px" },
-      { label: "小区业绩", prop: "communityPerf", minWidth: "120px" },
-      {
-        label: "团队业绩",
-        prop: "teamPerf",
-        minWidth: "120px"
-      },
-      { label: "注册时间", prop: "createTime", width: "180px", slot: "createTimeScope" },
+      { label: "规格名称", prop: "itemName", minWidth: "120px" },
+      { label: "获得积分", prop: "integral", minWidth: "120px" },
+      { label: "商户名称", prop: "merchantName", minWidth: "120px" },
+      { label: "支付方式", prop: "payType", slot: "payTypeScope", minWidth: "120px" },
+      { label: "商户地址", prop: "merchantAddress", minWidth: "370px" },
+      { label: "手机号", prop: "receiverPhone", minWidth: "170px" },
+      { label: "联系人", prop: "receiverName", minWidth: "120px" },
+      { label: "详细地址", prop: "detailAddress", minWidth: "120px" },
+      { label: "物流公司", prop: "logisticsCompany", minWidth: "120px" },
+      { label: "物流单号", prop: "trackingNumber", minWidth: "120px" },
+      { label: "购买数量", prop: "price", minWidth: "120px" },
+      { label: "分类", prop: "classify", slot: "classifyScope", minWidth: "120px" },
+      { label: "创建时间", prop: "createTime", width: "180px"  },
       { label: "操作", fixed: "right", slot: "operation", width: "120px" }
     ],
     list: [],
@@ -101,7 +95,14 @@ const _searchForm = (data: any) => {
   pageData.searchForm = data;
   _loadData();
 };
+//编辑规格
+const handleEditItem=(data:any)=>{
 
+}
+//添加规格
+const handleAddItem=(data:any)=>{
+
+}
 // 重置
 const _resetSearchForm = (data?) => (pageData.searchForm = data);
 
@@ -156,79 +157,70 @@ const btnClickHandle = (key: string) => {
   }
 };
 const handleUpdateLevel = (row: any) => {
-  const status = ref<string | number>(row.level);
-  const userStatus = ref<string | number>(row.level);
-  const address=row.address
+  const expressCompany = ref("");
+  const expressNumber = ref("");
+
   ElMessageBox({
-    title: "修改等级",
+    title: "填写物流信息",
     message: () =>
       h(
         "div",
         {
-          style:
-            "width: 300px; display: flex; flex-direction: column; gap: 16px;" // 增加了垂直方向的间距
+          style: "width: 300px; display: flex; flex-direction: column; gap: 16px;"
         },
         [
-          // 用户等级选择框
-          h(
-            "div",
-            { style: "display: flex; align-items: center; gap: 8px;" },
-            [
-              // 左侧标题
-              h(
-                "span",
-                { style: "white-space: nowrap; font-weight: 500;" },
-                "用户等级"
-              ),
-              // 下拉选择框
-              h(
-                ElSelect,
-                {
-                  modelValue: userStatus.value,
-                  placeholder: "请选择用户等级",
-                  "onUpdate:modelValue": (val: any) => {
-                    userStatus.value = val;
-                  },
-                  style: "flex: 1;",
-                  clearable: true
-                },
-                () =>
-                  userLevelOptions.map(item =>
-                    h(ElOption, {
-                      key: item.value,
-                      label: item.label,
-                      value: item.value
-                    })
-                  )
-              )
-            ]
-          )
+          // 物流公司
+          h("div", { style: "display: flex; flex-direction: column; gap: 6px;" }, [
+            h("span", { style: "font-weight: 500;" }, "物流公司"),
+            h(ElInput, {
+              placeholder: "请输入物流公司",
+              modelValue: expressCompany.value,
+              "onUpdate:modelValue": (val: string) => (expressCompany.value = val)
+            })
+          ]),
+          // 物流单号
+          h("div", { style: "display: flex; flex-direction: column; gap: 6px;" }, [
+            h("span", { style: "font-weight: 500;" }, "物流单号"),
+            h(ElInput, {
+              placeholder: "请输入物流单号",
+              modelValue: expressNumber.value,
+              "onUpdate:modelValue": (val: string) => (expressNumber.value = val)
+            })
+          ])
         ]
       ),
     showCancelButton: true,
+    confirmButtonText: "提交",
+    cancelButtonText: "取消",
+
     beforeClose: async (action, instance, done) => {
       if (action === "confirm") {
+        // 校验不能为空
+        if (!expressCompany.value.trim() || !expressNumber.value.trim()) {
+          ElMessage.warning("物流公司和物流单号不能为空！");
+          return; // 阻止关闭
+        }
+
+        instance.confirmButtonLoading = true;
+
         try {
-          instance.confirmButtonLoading = true;
-          const res = await callContractMethod(
-            contractAddress.Store_Address,
-            erc20Abi.abi,
-            "setLevel",
-            [address,Number(userStatus.value)],
-            true
-          )
-          if (res) {
-            message.success("操作成功");
-            await _loadData();
+          // 发送请求（你这里换成你的接口）
+          const res = await $userApi.send({
+            id: row.id,
+            logisticsCompany: expressCompany.value,
+            trackingNumber: expressNumber.value
+          });
+          if (res.success) {
+            ElMessage.success("提交成功");
             done();
           } else {
-            message.warning(res.msg || "操作失败");
+            ElMessage.error(res.msg || "提交失败");
           }
+          _loadData()
         } catch (err: any) {
-          console.error("updateLevel error:", err);
-          message.error(err?.message || "请求出错");
+          console.error("updateExpress error:", err);
+          ElMessage.error(err?.message || "请求出错");
         } finally {
-          // 确保 loading 状态被关闭
           instance.confirmButtonLoading = false;
         }
       } else {
@@ -271,22 +263,26 @@ onMounted(() => _loadData());
     <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="address" border
       stripe :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
       @page-current-change="handleChangeCurrentPage" @page-size-change="handleChangePageSize">
-      <template #levelScope="scope">
-        <span>{{ levelConvert(scope.row[scope.column.property]) }}</span>
+      <template #statusScope="scope">
+        <span>{{ orderConvert(scope.row[scope.column.property]) }}</span>
       </template>
-      <template #userTypeScope="scope">
-        <span>{{ userTypeConvert(scope.row[scope.column.property]) }}</span>
+      <template #imgScope="scope">
+        <el-image style="width: 100px; height: 100px" :src="scope.row['pic']" :zoom-rate="1.2" :max-scale="7"
+          :min-scale="0.2" fit="cover" />
+      </template>
+      <template #payTypeScope="scope">
+        <span>{{ payTypeConvert(scope.row[scope.column.property]) }}</span>
+      </template>
+      <template #classifyScope="scope">
+        <span>{{ classifyConvert(scope.row[scope.column.property]) }}</span>
       </template>
 
       <template #createTimeScope="scope">
         <span>{{ formatDate(scope.row[scope.column.property]).dateTime }}</span>
       </template>
 
-      <template #myRerfScope="scope">
-        <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
-      </template>
       <template #operation="{ row }">
-        <el-link type="primary" @click="handleUpdateLevel(row)">修改等级</el-link>
+        <el-link type="primary" @click="handleUpdateLevel(row)">{{ row.status == 2 ? '已发货' : '去发货' }}</el-link>
       </template>
     </pure-table>
   </el-card>

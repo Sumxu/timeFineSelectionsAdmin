@@ -27,10 +27,34 @@ export function statusConvert(value: number): string {
 export function levelConvert(value: number): string {
   return constants.levelMap[value];
 }
+export function userTypeConvert(value: number): string {
+  return constants.userTypeMap[value];
+}
+
 export function userlevelConvert(value: number): string {
   return constants.userlevelMap[value];
 }
 
 export function miningMachineEarningsConvert(value: number): string {
   return constants.miningMachineEarningsMap[value];
+}
+
+export function pledgeConvert(value:number):string{
+  return constants.pledgeMap[value];
+}
+
+export function coinTypeConvert(value:number):string{
+  return constants.coinTypeMap[value];
+}
+export function bizTypeConvert(value:number):string{
+  return constants.bizTypeMap[value];
+}
+export function orderConvert(value:number):string{
+  return constants.orderMap[value];
+}
+export function payTypeConvert(value:number):string{
+  return constants.payTypeMap[value];
+}
+export function classifyConvert(value:number):string{
+  return constants.classifyMap[value];
 }

@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import { reactive, onMounted } from "vue";
+import { reactive, ref, onMounted, h } from "vue";
 import FormSearch from "@/components/opts/form-search.vue";
 import TableButtons from "@/components/opts/btns2.vue";
-import StatusTabs from "@/components/opts/status-tabs.vue";
 import { PureTable } from "@pureadmin/table";
-import * as $exchangeApi from "@/api/member/exchange";
+import * as $userApi from "@/api/member/pledge";
 import message from "@/utils/message";
 import { formatAddress, formatDate, fromWei } from "@/utils/wallet";
-
+import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
+import { userlevelConvert, pledgeConvert, userTypeConvert } from "@/constants/convert";
+import { ElMessageBox, ElSelect, ElOption } from "element-plus";
 const pageData: any = reactive({
   searchState: true,
   searchForm: {},
-  searchStatus: "null",
   searchField: [
-    {
+    { 
       type: "input",
       label: "钱包地址",
       prop: "address",
       placeholder: "请输入钱包地址"
     }
   ],
-  dataSource: {},
+  dataSource: {
+    levelOptions: levelOptions
+  },
   permission: {
-    query: ["member:exchange:page"]
+    query: ["defi:user:page"]
   },
   btnOpts: {
     size: "small",
@@ -32,26 +34,35 @@ const pageData: any = reactive({
       { key: "refresh", label: "刷新", icon: "ep:refresh", state: true }
     ]
   },
-  tabsOpts: [
-    { label: "全部", name: "null" },
-    { label: "GenToUsdt", name: 0 },
-    { label: "UsdtToGen ", name: 1 },
-    { label: "UtToUsdt", name: 2 }
-  ],
   tableParams: {
     columns: [
-      { label: "钱包地址", prop: "address",minWidth:'370px'},
-      { label: "类型", prop: "type", slot: "typeScope"},
-      { label: "时间", prop: "blockTime", slot: "blockTimeScope" }
+      {
+        label: "钱包地址",
+        prop: "address",
+        width: "370px"
+      },
+      { label: "额度", prop: "amount" },
+      {
+        label: "状态",
+        prop: "status",
+        slot: "statusScope"
+      },
+      {
+        label: "日收益",
+        prop: "rate"
+      },
+      { label: "赎回时间", prop: "redeemTime", slot: "redeemTimeScope" },
+      { label: "创建时间", prop: "createTime", slot: "createTimeScope" },
     ],
     list: [],
     loading: false,
     pagination: {
-      pageSize: 10,
-      defaultPageSize: 10,
+      pageSize: 50,
+      defaultPageSize: 50,
       currentPage: 1,
       total: 0,
-      background: true
+      background: true,
+      pageSizes: [50, 100, 200, 300, 500]
     }
   }
 });
@@ -72,16 +83,16 @@ const _resetSearchForm = (data?) => (pageData.searchForm = data);
 const getQueryParams = () => ({
   ...pageData.searchForm,
   current: pageData.tableParams.pagination.currentPage,
-  size: pageData.tableParams.pagination.pageSize,
-  type: pageData.searchStatus
+  size: pageData.tableParams.pagination.pageSize
 });
+
 // 获取表格数据
 const _loadData = (page?: number) => {
   pageData.tableParams.list = []
   pageData.tableParams.loading = true;
   const query = getQueryParams();
   if (page) query.current = page;
-  $exchangeApi
+  $userApi
     .queryPage(query)
     .then((res: any) => {
       if (res.code === 200) {
@@ -118,12 +129,7 @@ const btnClickHandle = (key: string) => {
       break;
   }
 };
-
-const handleClick = (tabName: any) => {
-  pageData.searchStatus = tabName;
-  _loadData();
-};
-
+ 
 onMounted(() => _loadData());
 </script>
 
@@ -133,27 +139,22 @@ onMounted(() => _loadData());
       @search-form="_updateSearchFormData" @search="_searchForm" @reset="_resetSearchForm" />
     <table-buttons :size="pageData.btnOpts.size" :left-btns="pageData.btnOpts.leftBtns"
       :right-btns="pageData.btnOpts.rightBtns" @click="btnClickHandle" />
-
-    <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="id" border stripe
-      :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
+    <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="address" border
+      stripe :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
       @page-current-change="handleChangeCurrentPage" @page-size-change="handleChangePageSize">
-     
-
-      <template #amountScope="scope">
-        <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
+      <template #statusScope="scope">
+        <span>{{ pledgeConvert(scope.row[scope.column.property]) }}</span>
       </template>
-      <template #blockTimeScope="scope">
+ 
+
+      <template #createTimeScope="scope">
         <span>{{ formatDate(scope.row[scope.column.property]).dateTime }}</span>
       </template>
 
-      <template #typeScope="scope">
-        <span>
-          {{ fromWei(scope.row.amount0, 18, true, 3) }}
-          {{ scope.row.type == 1 ? "USDT" : "CA" }} {{"=>"}}
-          {{ fromWei(scope.row.amount1, 18, true, 3) }}
-          {{ scope.row.type == 1 ? "CA" : "USDT" }}
-        </span>
+      <template #myRerfScope="scope">
+        <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
       </template>
+      
     </pure-table>
   </el-card>
 </template>

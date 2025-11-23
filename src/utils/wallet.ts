@@ -85,16 +85,12 @@ export async function callContractMethod(
     console.warn("未检测到账户，请在 MetaMask 中登录");
     return;
   }
-
   const provider = new ethers.BrowserProvider(window.ethereum);
-
   const contract = write
     ? new ethers.Contract(address, abi, await provider.getSigner())
     : new ethers.Contract(address, abi, provider);
 
-  console.log(args);
   const result = await (contract as any)[method](...args);
-  console.log("result===",result)
   // 如果是写操作，返回 tx.wait() 结果
   if (write) {
     return await result.wait?.();
@@ -140,7 +136,7 @@ export function formatDate(dateString) {
   const day = String(date.getDate()).padStart(2, "0");
   const year = date.getFullYear();
 
-  const formattedDate = `${month}/${day}/${year}`;
+  const formattedDate = `${day}/${month}/${day}`;
 
   // 获取时间部分：HH:mm:ss
   const hours = String(date.getHours()).padStart(2, "0");
