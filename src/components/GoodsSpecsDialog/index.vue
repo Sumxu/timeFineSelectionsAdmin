@@ -69,8 +69,8 @@ const uploadValue = ref<string[]>([]);
 const classifyIdList = [
     { id: 1, name: "安品区", subsidy: 1 },
     { id: 2, name: "优品区", subsidy: 2 },
-    { id: 3, name: "兑换区", subsidy: 0 },
-    { id: 4, name: "臻品区", subsidy: 4 },
+    { id: 3, name: "臻品区", subsidy: 4 },
+    { id: 4, name: "兑换区", subsidy: 0 },
 ]
 // 监听 uploadValue 变化，把第一个值赋给 formData.pic
 watch(uploadValue, (val) => {

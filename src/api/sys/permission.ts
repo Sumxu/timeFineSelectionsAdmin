@@ -1,4 +1,4 @@
-import { BaseQuery, get, post, put, Result } from "../base";
+import { BaseQuery, get, post, put, Result ,deleteRequest} from "../base";
 
 /**
  *  菜单与权限树形列表
@@ -35,4 +35,12 @@ export function savePermission<T>(data: any): Promise<Result<T>> {
  */
 export function updatePermission<T>(id: string, data: any): Promise<Result<T>> {
   return put("/sys/permission/update", { id: id }, data);
+}
+
+
+ 
+export function delPermission<P extends BaseQuery, T>(
+  query?: P
+): Promise<Result<T>> {
+  return get("/sys/permission/delete", query);
 }

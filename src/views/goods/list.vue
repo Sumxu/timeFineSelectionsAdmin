@@ -17,8 +17,8 @@ import { parseEther  } from "ethers";
 const classifyIdList = [
   { id: 1, name: "安品区", subsidy: 1 },
   { id: 2, name: "优品区", subsidy: 2 },
-  { id: 3, name: "兑换区", subsidy: 0 },
-  { id: 4, name: "臻品区", subsidy: 4 },
+  { id: 4, name: "兑换区", subsidy: 0 },
+  { id: 3, name: "臻品区", subsidy: 4 },
 ]
 interface Product {
   id?: number;
@@ -56,7 +56,6 @@ const pageData: any = reactive({
   },
   btnOpts: {
     size: "small",
-    leftBtns: [],
     leftBtns: [
       {
         key: "add",
@@ -150,17 +149,10 @@ const handleSpecsStatus = async (row: any, props: any) => {
   // 查 subsidy
   const match = classifyIdList.find((item) => item.id == row.classify);
   const subsidy = BigInt(match?.subsidy || 0);
-
   // 价格（单位：ether）转 bigint wei
   const priceWei = parseEther(String(props.price));
-
   // 积分 = 价格 × 补贴（bigint）
   const integralWei = priceWei * subsidy;
-
-  console.log("priceWei =", priceWei.toString());
-  console.log("subsidy =", subsidy.toString());
-  console.log("integralWei =", integralWei.toString());
-
   try {
     const res = await callContractMethod(
       contractAddress.Store_Address,
@@ -169,10 +161,10 @@ const handleSpecsStatus = async (row: any, props: any) => {
       [
         props.id,
         [
-          priceWei,              // 价格（wei）
+          priceWei,  
           row.classify,
           row.merchantAddress,
-          integralWei,           // 积分（wei）
+          integralWei, 
           status
         ]
       ],
@@ -360,11 +352,11 @@ onMounted(() => {
             <el-table-column label="操作" width="160" fixed="right">
               <template #default="scope">
                 <el-button type="primary" size="small" @click="handleAddItem(props.row, scope.row)">
-                  编辑
+                  编辑 
                 </el-button>
                 <el-button type="primary" size="small" :loading="pageData.switchLoading"
                   @click="handleSpecsStatus(props.row, scope.row)">
-                  {{ props.row.status ? '下链' : "上链" }}
+                  {{ scope.row.status==true ? '下链' : "上链" }}
                 </el-button>
               </template>
             </el-table-column>
@@ -386,7 +378,7 @@ onMounted(() => {
             :zoom-rate="1.2" :max-scale="7" :min-scale="0.2" fit="cover" />
         </template>
         <template v-else-if="col.slot === 'statusScope'" #default="scope">
-          <el-switch v-model="scope.row.status" @change="handleStatusChange(scope.row)" />
+          <el-switch v-model="scope.row.status" disabled @change="handleStatusChange(scope.row)" />
         </template>
         <template v-else-if="col.slot === 'operation'" #default="scope">
           <el-link type="primary" @click="handleUpdateGood(scope.row)">

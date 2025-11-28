@@ -7,6 +7,7 @@ import * as permissionApi from "@/api/sys/permission";
 import { message } from "@/utils/message";
 import { PureTable } from "@pureadmin/table";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import { ElMessageBox, ElMessage } from "element-plus";
 import { hasAuth } from "@/router/utils";
 const menuEditRef = ref();
 const pageData: any = reactive({
@@ -214,6 +215,27 @@ const _handleRowAdd = (data: any) => {
   pageData.tableParams.currentData = data;
   menuEditRef.value!.open("save", { parentId: data.id }, "修改菜单/权限");
 };
+const _handleRowDel = async (data: any) => {
+  try {
+    await ElMessageBox.confirm("确认要删除此项吗？删除后不可恢复！", "提示", {
+        confirmButtonText: "确认删除",
+        cancelButtonText: "取消",
+      type: "warning"
+      }
+    );
+
+    // 用户点击“确认删除”才会走到这里
+    pageData.tableParams.currentData = data;
+
+    // 🔥这里写你的删除接口逻辑
+    const result = await permissionApi.delPermission({ id: data.id })
+    _loadData();
+    ElMessage.success("删除成功");
+  } catch (err) {
+    // 用户点击取消，不做处理
+    console.log("取消删除");
+  }
+};
 /**
  * 新增
  */
@@ -230,15 +252,9 @@ defineOptions({ name: "sysMenu" });
   <el-card :shadow="'never'">
     <template #default>
       <!--form search-->
-      <FormSearch
-        :show="pageData.searchState"
-        :size="'default'"
-        :form-field="pageData.searchField"
-        @search-form="_updateSearchFormData"
-        @search="_searchForm"
-        @reset="_resetSearchForm"
-        :query-permission="pageData.permission.query"
-      />
+      <FormSearch :show="pageData.searchState" :size="'default'" :form-field="pageData.searchField"
+        @search-form="_updateSearchFormData" @search="_searchForm" @reset="_resetSearchForm"
+        :query-permission="pageData.permission.query" />
       <!--operator-->
       <!-- <TableOperation
         :size="'small'"
@@ -247,22 +263,12 @@ defineOptions({ name: "sysMenu" });
         @click-refresh="_loadData"
         @click-add="_handlerAdd"
       /> -->
-      <table-buttons
-        :size="pageData.btnOpts.size"
-        :left-btns="pageData.btnOpts.left"
-        :right-btns="pageData.btnOpts.right"
-        @click="handleBtnClick"
-      />
+      <table-buttons :size="pageData.btnOpts.size" :left-btns="pageData.btnOpts.left"
+        :right-btns="pageData.btnOpts.right" @click="handleBtnClick" />
       <!--table-->
-      <pure-table
-        :loading="pageData.tableParams.loading"
-        :columns="pageData.tableParams.columns"
-        :data="pageData.tableParams.list"
-        :border="true"
-        :stripe="true"
-        :header-row-class-name="'table-header'"
-        row-key="id"
-      >
+      <pure-table :loading="pageData.tableParams.loading" :columns="pageData.tableParams.columns"
+        :data="pageData.tableParams.list" :border="true" :stripe="true" :header-row-class-name="'table-header'"
+        row-key="id">
         <template #booleanScope="scope">
           {{ scope.row.keepAlive ? "是" : "否" }}
         </template>
@@ -274,25 +280,14 @@ defineOptions({ name: "sysMenu" });
           <el-tag v-else type="info">禁用</el-tag>
         </template>
         <template #operation="scope">
-          <el-link
-            :disabled="!hasAuth(pageData.permission.update)"
-            type="primary"
-            @click="_editMenu(scope.row)"
-            >编辑</el-link
-          >
+          <el-link :disabled="!hasAuth(pageData.permission.update)" type="primary"
+            @click="_editMenu(scope.row)">编辑</el-link>
           <el-divider direction="vertical" />
-          <el-link
-            :disabled="!hasAuth(pageData.permission.add)"
-            type="primary"
-            @click="_handleRowAdd(scope.row)"
-            >新增</el-link
-          >
+          <el-link :disabled="!hasAuth(pageData.permission.add)" type="primary"
+            @click="_handleRowAdd(scope.row)">新增</el-link>
           <el-divider direction="vertical" />
-          <el-link
-            :disabled="!hasAuth(pageData.permission.delete)"
-            type="primary"
-            >删除</el-link
-          >
+          <el-link :disabled="!hasAuth(pageData.permission.delete)" @click="_handleRowDel(scope.row)"
+            type="primary">删除</el-link>
         </template>
       </pure-table>
 
@@ -308,5 +303,4 @@ defineOptions({ name: "sysMenu" });
 //   color: #515a6e;
 //   height: 40px;
 //   font-size: 13px;
-// }
-</style>
+// }</style>

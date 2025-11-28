@@ -19,7 +19,7 @@ const devContract: ContractMap = {
 // 生产环境合约（主网）
 const prodContract: ContractMap = {
   FactoryContract: "0x7F652Ef3416fCaf4cA88AB42A950E30bFdC8E797",
-  Store_Address: "0xD9f5eE36A1809B10F5aDF005ef52e54E3b5ff1C6",
+  Store_Address: "0x87663d59f95ed4689D74733206b04806477e82b3",
   Usdt_Address: "0x55d398326f99059fF775485246999027B3197955",
   BnB_Withdraw_Address: "0x99ad17227797c49cef44b8f975247cfc5828eb86",
   BnB_Address: "0x6409d5db26cf6fb0674a98c4f1b6865915c3efc5",

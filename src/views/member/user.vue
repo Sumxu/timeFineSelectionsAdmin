@@ -64,9 +64,8 @@ const pageData: any = reactive({
       },
       {
         label: "用户投入",
-        prop: "myRerf",
-        minWidth: "120px",
-        slot: "myRerfScope"
+        prop: "myPerf",
+        minWidth: "120px"
       },
 
       { label: "直推人数", prop: "directCount", minWidth: "120px" },
@@ -282,9 +281,7 @@ onMounted(() => _loadData());
         <span>{{ formatDate(scope.row[scope.column.property]).dateTime }}</span>
       </template>
 
-      <template #myRerfScope="scope">
-        <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
-      </template>
+      
       <template #operation="{ row }">
         <el-link type="primary" @click="handleUpdateLevel(row)">修改等级</el-link>
       </template>

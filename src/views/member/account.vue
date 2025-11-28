@@ -60,8 +60,7 @@ const pageData: any = reactive({
       },
       {
         label: "额度",
-        prop: "amount",
-        slot: "amountScope"
+        prop: "amount"
       },
       { label: "创建时间", prop: "createTime", width: "180px", slot: "createTimeScope" },
     ],
@@ -163,7 +162,6 @@ onMounted(() => _loadData());
       <template #bizTypeScope="scope">
         <span>{{ bizTypeConvert(scope.row[scope.column.property]) }}</span>
       </template>
-
         <template #amountScope="scope">
         <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
       </template>

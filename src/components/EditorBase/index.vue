@@ -25,10 +25,10 @@ const editorConfig = {
 };
 editorConfig.MENU_CONF["uploadImage"] = {
   // 服务端上传地址，根据实际业务改写
-  server: `http://192.168.31.231:8710/file/upload`,
+  server: `https://dd.clkapp.cc/file/upload`,
   // form-data 的 fieldName，根据实际业务改写
   fieldName: "file",
-  // 选择文件时的类型限制，根据实际业务改写
+  // 选择文件时的类型限制，根据实际业务改写                                          
   allowedFileTypes: ["image/png", "image/jpg", "image/jpeg"],
   // 自定义插入图片
   customInsert(res: any, insertFn) {

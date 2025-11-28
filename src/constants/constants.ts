@@ -120,7 +120,8 @@ export const userTypeMap: SelectOptionMap<string> = {
   0: "普通",
   1: "安品商家",
   2: "优品区",
-  3: "臻品区"
+  3: "臻品区",
+  4: "兑换区"
 };
 export const pledgeMap: SelectOptionMap<string> = {
   1: "正常",
@@ -161,6 +162,6 @@ export const classifyMap: SelectOptionMap<string> = {
   0: "请选择",
   1: "安品区",
   2: "优品区",
-  4: "臻品区",
-  3: "兑换区"
+  3: "臻品区",
+  4: "兑换区"
 };

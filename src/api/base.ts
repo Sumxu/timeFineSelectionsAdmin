@@ -51,3 +51,11 @@ export function deleteRequest<T>(
 ): Promise<Result<T>> {
   return http.request("delete", url, { params: params, data: data });
 }
+export function deleteBoyRequest<T>(
+  url: string,
+  data?: any
+): Promise<Result<T>> {
+  return http.request("delete", url, {
+    data: data || {}
+  });
+}
