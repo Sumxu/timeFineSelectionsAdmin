@@ -6,21 +6,46 @@ import { PureTable } from "@pureadmin/table";
 import * as $userApi from "@/api/member/pledge";
 import message from "@/utils/message";
 import { formatAddress, formatDate, fromWei } from "@/utils/wallet";
-import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
+import { levelOptions, userLevelOptions, userTypeMap, pledgeOptions } from "@/constants/constants";
 import { userlevelConvert, pledgeConvert, userTypeConvert } from "@/constants/convert";
 import { ElMessageBox, ElSelect, ElOption } from "element-plus";
 const pageData: any = reactive({
   searchState: true,
   searchForm: {},
   searchField: [
-    { 
+    {
       type: "input",
       label: "钱包地址",
       prop: "address",
       placeholder: "请输入钱包地址"
-    }
+    },
+    {
+      type: "date",
+      dateType: "datetimerange",
+      label: "日期范围",
+      prop: "dates",
+      placeholder: "请输入日期范围",
+      startPlaceholder: "请输入开始日期范围",
+      endPlaceholder: "请输入结束日期范围",
+    },
+    {
+      type: "select",
+      label: "状态",
+      prop: "status",
+      placeholder: "请选择用户类型",
+      dataSourceKey: "pledgeOptions",
+      options: {
+        filterable: true,
+        keys: {
+          prop: "value",
+          value: "value",
+          label: "label"
+        }
+      }
+    },
   ],
   dataSource: {
+    pledgeOptions: pledgeOptions,
     levelOptions: levelOptions
   },
   permission: {
@@ -129,7 +154,7 @@ const btnClickHandle = (key: string) => {
       break;
   }
 };
- 
+
 onMounted(() => _loadData());
 </script>
 
@@ -145,7 +170,7 @@ onMounted(() => _loadData());
       <template #statusScope="scope">
         <span>{{ pledgeConvert(scope.row[scope.column.property]) }}</span>
       </template>
- 
+
 
       <template #createTimeScope="scope">
         <span>{{ formatDate(scope.row[scope.column.property]).dateTime }}</span>
@@ -154,7 +179,7 @@ onMounted(() => _loadData());
       <template #myRerfScope="scope">
         <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
       </template>
-      
+
     </pure-table>
   </el-card>
 </template>

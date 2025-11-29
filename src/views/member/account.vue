@@ -6,13 +6,15 @@ import { PureTable } from "@pureadmin/table";
 import * as $userApi from "@/api/member/bill";
 import message from "@/utils/message";
 import { formatAddress, formatDate, fromWei } from "@/utils/wallet";
-import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
-import { bizTypeConvert ,coinTypeConvert , userTypeConvert } from "@/constants/convert";
+import { levelOptions, userLevelOptions, userTypeMap, coinTypeOptions, bizTypeOptions } from "@/constants/constants";
+import { bizTypeConvert, coinTypeConvert, userTypeConvert } from "@/constants/convert";
 import { ElMessageBox, ElSelect, ElOption } from "element-plus";
-
+import StatusTabs from "@/components/opts/status-tabs.vue";
 const pageData: any = reactive({
   searchState: true,
   searchForm: {},
+  bizType: null,
+  bizTypeOptions: bizTypeOptions,
   searchField: [
     {
       type: "input",
@@ -22,13 +24,28 @@ const pageData: any = reactive({
     },
     {
       type: "input",
-      label: "上级地址",
-      prop: "parentAddress",
-      placeholder: "请输入上级地址"
-    }
+      label: "来源地址",
+      prop: "fromAddress",
+      placeholder: "请输入来源地址"
+    },
+    {
+      type: "select",
+      label: "代币类型",
+      prop: "coinType",
+      placeholder: "请选择代币类型",
+      dataSourceKey: "coinTypeOptions",
+      options: {
+        filterable: true,
+        keys: {
+          prop: "value",
+          value: "value",
+          label: "label"
+        }
+      }
+    },
   ],
   dataSource: {
-    levelOptions: levelOptions
+    coinTypeOptions: coinTypeOptions
   },
   permission: {
     query: ["defi:user:page"]
@@ -46,6 +63,11 @@ const pageData: any = reactive({
       {
         label: "钱包地址",
         prop: "address",
+        width: "370px"
+      },
+      {
+        label: "来源",
+        prop: "fromAddress",
         width: "370px"
       },
       {
@@ -93,9 +115,13 @@ const _resetSearchForm = (data?) => (pageData.searchForm = data);
 const getQueryParams = () => ({
   ...pageData.searchForm,
   current: pageData.tableParams.pagination.currentPage,
-  size: pageData.tableParams.pagination.pageSize
+  size: pageData.tableParams.pagination.pageSize,
+  bizType: pageData.bizType,
 });
-
+const handleClick = (tabName: any) => {
+  pageData.bizType = tabName;
+  _loadData();
+};
 // 获取表格数据
 const _loadData = (page?: number) => {
   pageData.tableParams.list = []
@@ -148,6 +174,7 @@ onMounted(() => _loadData());
       @search-form="_updateSearchFormData" @search="_searchForm" @reset="_resetSearchForm" />
     <table-buttons :size="pageData.btnOpts.size" :left-btns="pageData.btnOpts.leftBtns"
       :right-btns="pageData.btnOpts.rightBtns" @click="btnClickHandle" />
+    <status-tabs v-model="pageData.bizType" :tabs="pageData.bizTypeOptions" @change="handleClick" />
     <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="address" border
       stripe :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
       @page-current-change="handleChangeCurrentPage" @page-size-change="handleChangePageSize">
@@ -158,11 +185,11 @@ onMounted(() => _loadData());
       <template #coinTypeScope="scope">
         <span>{{ coinTypeConvert(scope.row[scope.column.property]) }}</span>
       </template>
-      
+
       <template #bizTypeScope="scope">
         <span>{{ bizTypeConvert(scope.row[scope.column.property]) }}</span>
       </template>
-        <template #amountScope="scope">
+      <template #amountScope="scope">
         <span>{{ fromWei(scope.row[scope.column.property]) }}</span>
       </template>
     </pure-table>

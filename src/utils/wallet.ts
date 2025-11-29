@@ -127,31 +127,43 @@ export async function getBalance(address: string, tokenAddress?: string) {
 
   return balance; // BigNumber，单位 token 的最小精度
 }
-export function formatDate(dateString) {
-  // 解析 ISO 格式的日期字符串
+ export function formatDate(dateString) {
   const date = new Date(dateString);
 
-  // 获取日期部分：MM/DD/YYYY
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // 月份从 0 开始，所以加 1
+  // 如果日期无效，直接返回 "-"
+  if (isNaN(date.getTime())) {
+    return {
+      date: "-",
+      time: "-",
+      dateTime: "-"
+    };
+  }
+
+  // 日期格式：DD/MM/YYYY
   const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
-
-  const formattedDate = `${day}/${month}/${day}`;
-
-  // 获取时间部分：HH:mm:ss
+  const formattedDate = `${day}/${month}/${year}`;
+  // 时间格式：HH:mm:ss
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   const seconds = String(date.getSeconds()).padStart(2, "0");
   const formattedTime = `${hours}:${minutes}:${seconds}`;
-  // 返回包含日期和时间的对象
   return {
     date: formattedDate,
     time: formattedTime,
-    dateTime: formattedDate + " " + formattedTime
+    dateTime: `${formattedDate} ${formattedTime}`
   };
 }
+
 
 //bigNumber加法
 export function BigNumberAdd(big1: BigInt, big2: BigInt){
   return BigInt(big1) + BigInt(big2);
 };
+export function toLower(str) {
+  if (typeof str !== "string") {
+    return str; // 数字、null、undefined、对象等都直接返回原值
+  }
+  return str.toLowerCase();
+}

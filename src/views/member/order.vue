@@ -6,23 +6,70 @@ import { PureTable } from "@pureadmin/table";
 import * as $userApi from "@/api/member/order";
 import message from "@/utils/message";
 import { formatAddress, formatDate, fromWei } from "@/utils/wallet";
-import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
+import { levelOptions, userLevelOptions, userTypeMap, classifyOptions, payTypeOptions, buyStatusOptions } from "@/constants/constants";
 import { orderConvert, payTypeConvert, classifyConvert } from "@/constants/convert";
 import { ElMessageBox, ElSelect, ElOption, ElInput, ElMessage } from "element-plus";
+import StatusTabs from "@/components/opts/status-tabs.vue";
 const pageData: any = reactive({
   preserveExpanded: true,
   searchState: true,
   searchForm: {},
+  status: null,
   searchField: [
     {
       type: "input",
       label: "钱包地址",
       prop: "address",
       placeholder: "请输入钱包地址"
-    }
+    },
+    {
+      type: "input",
+      label: "订单编号",
+      prop: "orderSn",
+      placeholder: "请输入订单编号"
+    },
+    {
+      type: "input",
+      label: "商品名称",
+      prop: "name",
+      placeholder: "请输入商品名称"
+    },
+    {
+      type: "select",
+      label: "支付方式",
+      prop: "payType",
+      placeholder: "请选择支付方式",
+      dataSourceKey: "payTypeOptions",
+      options: {
+        filterable: true,
+        keys: {
+          prop: "value",
+          value: "value",
+          label: "label"
+        }
+      }
+    },
+    {
+      type: "select",
+      label: "商品分区",
+      prop: "classify",
+      placeholder: "请选择商品分区",
+      dataSourceKey: "classifyOptions",
+      options: {
+        filterable: true,
+        keys: {
+          prop: "value",
+          value: "value",
+          label: "label"
+        }
+      }
+    },
   ],
+  buyStatusOptions: buyStatusOptions,
   dataSource: {
-    levelOptions: levelOptions
+    levelOptions: levelOptions,
+    payTypeOptions: payTypeOptions,
+    classifyOptions: classifyOptions
   },
   permission: {
     query: ["defi:user:page"]
@@ -71,7 +118,7 @@ const pageData: any = reactive({
       { label: "物流单号", prop: "trackingNumber", minWidth: "120px" },
       { label: "购买数量", prop: "price", minWidth: "120px" },
       { label: "分类", prop: "classify", slot: "classifyScope", minWidth: "120px" },
-      { label: "创建时间", prop: "createTime", width: "180px"  },
+      { label: "创建时间", prop: "createTime", width: "180px" },
       { label: "操作", fixed: "right", slot: "operation", width: "120px" }
     ],
     list: [],
@@ -96,13 +143,17 @@ const _searchForm = (data: any) => {
   _loadData();
 };
 //编辑规格
-const handleEditItem=(data:any)=>{
+const handleEditItem = (data: any) => {
 
 }
 //添加规格
-const handleAddItem=(data:any)=>{
+const handleAddItem = (data: any) => {
 
 }
+const handleClick = (tabName: any) => {
+  pageData.status = tabName;
+  _loadData();
+};
 // 重置
 const _resetSearchForm = (data?) => (pageData.searchForm = data);
 
@@ -110,7 +161,8 @@ const _resetSearchForm = (data?) => (pageData.searchForm = data);
 const getQueryParams = () => ({
   ...pageData.searchForm,
   current: pageData.tableParams.pagination.currentPage,
-  size: pageData.tableParams.pagination.pageSize
+  size: pageData.tableParams.pagination.pageSize,
+  status: pageData.status
 });
 
 // 获取表格数据
@@ -260,6 +312,7 @@ onMounted(() => _loadData());
       @search-form="_updateSearchFormData" @search="_searchForm" @reset="_resetSearchForm" />
     <table-buttons :size="pageData.btnOpts.size" :left-btns="pageData.btnOpts.leftBtns"
       :right-btns="pageData.btnOpts.rightBtns" @click="btnClickHandle" />
+    <status-tabs v-model="pageData.status" :tabs="pageData.buyStatusOptions" @change="handleClick" />
     <pure-table :data="pageData.tableParams.list" :columns="pageData.tableParams.columns" row-key="address" border
       stripe :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
       @page-current-change="handleChangeCurrentPage" @page-size-change="handleChangePageSize">

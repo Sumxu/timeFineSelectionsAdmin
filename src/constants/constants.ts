@@ -69,7 +69,14 @@ export const userStatusOptions: SelectOption<number>[] = [
   { label: "正常", value: 1 },
   { label: "禁用", value: 2 }
 ];
-
+export const coinTypeOptions: SelectOption<number>[] = [
+  { label: "全部", value: 0 },
+  { label: "USDT", value: 1 },
+  { label: "USD", value: 2 },
+  { label: "TUSD", value: 3 },
+  { label: "TAX", value: 4 },
+  { label: "积分", value: 5 }
+];
 export const statusOptions: SelectOption<number>[] = [
   { label: "处理中", value: 0 },
   { label: "成功", value: 1 },
@@ -90,15 +97,56 @@ export const levelOptions: SelectOption<number>[] = [
   { label: "社区节点", value: 4 }
 ];
 export const userLevelOptions: SelectOption<number>[] = [
-  { label: "无", value: 0 },
+  { label: "全部", value: 0 },
   { label: "F1", value: 1 },
   { label: "F2", value: 2 },
   { label: "F3", value: 3 },
   { label: "F4", value: 4 },
   { label: "F5", value: 5 },
-  { label: "F6", value: 6 },
-  { label: "F7", value: 7 },
-  { label: "F8", value: 8 }
+  { label: "F6", value: 6 }
+];
+export const userTypeOptions: SelectOption<number>[] = [
+  { label: "全部", value: 0 },
+  { label: "安品区", value: 1 },
+  { label: "优品区", value: 2 },
+  { label: "臻品区", value: 3 },
+  { label: "兑换区", value: 4 }
+];
+export const pledgeOptions: SelectOption<number>[] = [
+  { label: "正常", value: 1 },
+  { label: "结束", value: 2 }
+];
+export const buyStatusOptions: SelectOption<number>[] = [
+  { label: "全部", value: null },
+  { label: "已购买", value: 1 },
+  { label: "已发货", value: 2 },
+  { label: "已完成", value: 2 }
+];
+export const payTypeOptions: SelectOption<number>[] = [
+  { label: "USDT", value: 1 },
+  { label: "USD", value: 2 },
+  { label: "TUSD", value: 3 }
+];
+export const classifyOptions: SelectOption<number>[] = [
+  { label: "全部", value: "null"},
+  { label: "安品区", value: 1 },
+  { label: "优品区", value: 2 },
+  { label: "臻品区", value: 3 },
+  { label: "兑换区", value: 4 }
+];
+export const bizTypeOptions: SelectOption<number>[] = [
+  { label: "全部", value: null },
+  { label: "积分释放", value: 1 },
+  { label: "购买商品", value: 2 },
+  { label: "提现", value: 3 },
+  { label: "质押", value: 4 },
+  { label: "赎回", value: 5 },
+  { label: "质押收益", value: 6 },
+  { label: "卖出商品", value: 7 },
+  { label: "团队加速", value: 8 },
+  { label: "平级加速", value: 9 },
+  { label: "直推", value: 10 },
+  { label: "间推", value: 11 }
 ];
 export const userlevelMap: SelectOptionMap<string> = {
   0: "无",
@@ -117,21 +165,22 @@ export const levelMap: SelectOptionMap<string> = {
   4: "社区节点"
 };
 export const userTypeMap: SelectOptionMap<string> = {
-  0: "普通",
+  0: "无",
   1: "安品商家",
   2: "优品区",
   3: "臻品区",
   4: "兑换区"
 };
+
 export const pledgeMap: SelectOptionMap<string> = {
   1: "正常",
   2: "结束"
 };
 export const coinTypeMap: SelectOptionMap<string> = {
-  1: "usdt",
-  2: "usd",
-  3: "tusd",
-  4: "tax",
+  1: "USDT",
+  2: "USD",
+  3: "TUSD",
+  4: "TAX",
   5: "积分"
 };
 
@@ -154,9 +203,9 @@ export const orderMap: SelectOptionMap<string> = {
   3: "已完成"
 };
 export const payTypeMap: SelectOptionMap<string> = {
-  1: "usdt",
-  2: "usd",
-  3: "tusd"
+  1: "USDT",
+  2: "USD",
+  3: "TUSD"
 };
 export const classifyMap: SelectOptionMap<string> = {
   0: "请选择",

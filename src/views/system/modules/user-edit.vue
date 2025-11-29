@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from "vue";
+import { isAddress } from "ethers";
 import * as $userApi from "@/api/sys/user";
 import message from "@/utils/message";
 const formRef = ref();
-
+import { toLower } from '@/utils/wallet'
 const checkUsername = (rule: any, value: any, callback: any) => {
   if (value === "") {
     callback(new Error("请输入帐号"));
@@ -81,6 +82,24 @@ const pageData: any = reactive({
         { required: true, message: "请输入确认密码", trigger: "blur" },
         { min: 6, max: 20, message: "长度在 6 到 20 个字符", trigger: "blur" },
         { validator: validatePass2, trigger: "blur" }
+      ],
+      address: [
+        { required: true, message: "请输入钱包地址", trigger: "blur" },
+        {
+          validator: (_, value, callback) => {
+            if (!value) return callback();
+            // 小写转换
+            const lower = value.toLowerCase();
+            pageData.formParam.infoForm.address = lower;
+            // 校验钱包地址
+            if (!isAddress(lower)) {
+              callback(new Error("请输入有效的钱包地址"));
+            } else {
+              callback();
+            }
+          },
+          trigger: "blur"
+        }
       ]
     },
     loading: false
@@ -126,7 +145,6 @@ const formFields = computed(() => {
       prop: "nickname",
       placeholder: "请输入姓名"
     },
-
     {
       type: "select",
       label: "分配角色",
@@ -225,9 +243,26 @@ const formRules = computed(() => {
       }
     ],
     roleIds: [{ required: true, message: "请选择角色", trigger: "blur" }],
-    isEnabled: [{ required: true, message: "请选择状态", trigger: "change" }]
+    isEnabled: [{ required: true, message: "请选择状态", trigger: "change" }],
+    address: [
+      { required: true, message: "请输入钱包地址", trigger: "blur" },
+      {
+        validator: (_, value, callback) => {
+          if (!value) return callback();
+          // 小写转换
+          const lower = value.toLowerCase();
+          pageData.formParam.infoForm.address = lower;
+          // 校验钱包地址
+          if (!isAddress(lower)) {
+            callback(new Error("请输入有效的钱包地址"));
+          } else {
+            callback();
+          }
+        },
+        trigger: "blur"
+      }
+    ]
   };
-
   if (pageData.mode === "add") {
     rule["password"] = [
       { required: true, message: "请输入密码", trigger: "blur" },
@@ -302,6 +337,8 @@ const handleCancel = () => {
 const handleConfirm = () => {
   formRef.value!.validate((isValid: boolean) => {
     if (isValid) {
+      console.log("pageData.mode---", pageData.formParam.infoForm)
+      return
       if (pageData.mode === "add") {
         save();
       } else {
@@ -355,85 +392,39 @@ defineExpose({ open });
 
 <template>
   <div>
-    <el-drawer
-      v-model="pageData.modalParam.visible"
-      :title="pageData.modalParam.title"
-      destroy-on-close
-      modal
-      :close-on-click-modal="pageData.modalParam.closeOnclickModal"
-      :before-close="_handleClose"
-    >
+    <el-drawer v-model="pageData.modalParam.visible" :title="pageData.modalParam.title" destroy-on-close modal
+      :close-on-click-modal="pageData.modalParam.closeOnclickModal" :before-close="_handleClose">
       <template #header>
         <span style="font-weight: 700">{{ pageData.modalParam.title }}</span>
       </template>
-      <el-form
-        ref="formRef"
-        v-loading="pageData.formParam.loading"
-        :model="pageData.formParam.infoForm"
-        :rules="formRules"
-        label-position="left"
-      >
-        <el-form-item
-          v-for="(item, index) in formFields"
-          v-show="showFormItem(item)"
-          :key="index"
-          :label="item.label"
-          :prop="item.prop"
-          class="form-row"
-        >
+      <el-form ref="formRef" v-loading="pageData.formParam.loading" :model="pageData.formParam.infoForm"
+        :rules="formRules" label-position="left">
+        <el-form-item v-for="(item, index) in formFields" v-show="showFormItem(item)" :key="index" :label="item.label"
+          :prop="item.prop" class="form-row">
           <template v-if="item.type === 'input'">
-            <el-input
-              v-model="pageData.formParam.infoForm[item.prop]"
-              clearable
-              :type="item.options?.type ?? 'text'"
-              :show-password="item.options?.showPassword ?? false"
-              :disabled="disabledFields(item)"
-            />
+            <el-input v-model="pageData.formParam.infoForm[item.prop]" clearable :type="item.options?.type ?? 'text'"
+              :show-password="item.options?.showPassword ?? false" :disabled="disabledFields(item)" />
           </template>
           <template v-if="item.type === 'select'">
-            <el-select
-              v-model="pageData.formParam.infoForm[item.prop]"
-              style="width: 1000%"
-              :clearable="item.options?.clearable ?? false"
-              :filterable="item.options?.filterable ?? false"
-              :multiple="item.options?.multiple ?? false"
-              :disabled="disabledFields(item)"
-            >
-              <el-option
-                v-for="val in pageData.dataSource[item.dataSourceKey]"
-                :key="val[item.options?.keys?.value ?? 'value']"
-                :label="val[item.options?.keys?.label ?? 'label']"
-                :value="val[item.options?.keys?.value ?? 'value']"
-              />
+            <el-select v-model="pageData.formParam.infoForm[item.prop]" style="width: 1000%"
+              :clearable="item.options?.clearable ?? false" :filterable="item.options?.filterable ?? false"
+              :multiple="item.options?.multiple ?? false" :disabled="disabledFields(item)">
+              <el-option v-for="val in pageData.dataSource[item.dataSourceKey]"
+                :key="val[item.options?.keys?.value ?? 'value']" :label="val[item.options?.keys?.label ?? 'label']"
+                :value="val[item.options?.keys?.value ?? 'value']" />
             </el-select>
           </template>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-popconfirm
-          title="确定放弃编辑？"
-          ok-text="确定"
-          cancel-text="取消"
-          @confirm="handleCancel"
-        >
+        <el-popconfirm title="确定放弃编辑？" ok-text="确定" cancel-text="取消" @confirm="handleCancel">
           <template #reference>
             <el-button v-show="showBtn" plain>取 消</el-button>
           </template>
         </el-popconfirm>
-        <el-popconfirm
-          title="确认提交?"
-          confirm-button-text="确定"
-          cancel-button-text="取消"
-          @confirm="handleConfirm"
-        >
+        <el-popconfirm title="确认提交?" confirm-button-text="确定" cancel-button-text="取消" @confirm="handleConfirm">
           <template #reference>
-            <el-button
-              v-show="showBtn"
-              v-loading="pageData.formParam.loading"
-              type="primary"
-              plain
-              >提 交</el-button
-            >
+            <el-button v-show="showBtn" v-loading="pageData.formParam.loading" type="primary" plain>提 交</el-button>
           </template>
         </el-popconfirm>
       </template>

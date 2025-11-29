@@ -13,7 +13,8 @@ import GoodsInfo from '@/components/GoodsInfo/index.vue'
 import GoodsSpecsDialog from '@/components/GoodsSpecsDialog/index.vue'
 import { contractAddress } from "@/config/contract";
 import erc20Abi from "@/abi/erc20-abi";
-import { parseEther  } from "ethers";
+import { parseEther } from "ethers";
+import StatusTabs from "@/components/opts/status-tabs.vue";
 const classifyIdList = [
   { id: 1, name: "安品区", subsidy: 1 },
   { id: 2, name: "优品区", subsidy: 2 },
@@ -40,12 +41,36 @@ const pageData: any = reactive({
   dialogVisible: false,
   currentProduct: null as Product | null,
   searchForm: {},
+  classify: null,
+  tabsOpts: [
+    { label: "全部", name: null },
+    { label: "安品区", name: 1 },
+    { label: "优品区", name: 2 },
+    { label: "兑换区", name: 3 },
+    { label: "臻品区", name: 4 },
+  ],
+
   searchField: [
     {
       type: "input",
       label: "钱包地址",
       prop: "address",
       placeholder: "请输入钱包地址"
+    },
+    {
+      type: "input",
+      label: "商户地址",
+      prop: "merchantAddress",
+      placeholder: "请输入商户地址"
+    },
+    {
+      type: "date",
+      dateType: "datetimerange",
+      label: "日期范围",
+      prop: "dates",
+      placeholder: "请输入日期范围",
+      startPlaceholder: "请输入开始日期范围",
+      endPlaceholder: "请输入结束日期范围",
     }
   ],
   dataSource: {
@@ -120,6 +145,10 @@ const pageData: any = reactive({
     }
   }
 });
+const handleClick = (tabName: any) => {
+  pageData.classify = tabName;
+  _loadData();
+};
 
 // 搜索表单变化
 const _updateSearchFormData = (data: any) => (pageData.searchForm = data);
@@ -134,13 +163,13 @@ const handleStatusChange = (row: any) => {
   })
 }
 
- // 计算积分（BigNumber × number）
+// 计算积分（BigNumber × number）
 const calcIntegral = (priceBn: BigNumber, subsidy: number) => {
   return priceBn.times(subsidy); // 返回 BigNumber
 };
 
 // 规格是否上链（ethers v6 完整写法）
- // 规格是否上链
+// 规格是否上链
 const handleSpecsStatus = async (row: any, props: any) => {
   pageData.switchLoading = true;
 
@@ -161,10 +190,10 @@ const handleSpecsStatus = async (row: any, props: any) => {
       [
         props.id,
         [
-          priceWei,  
+          priceWei,
           row.classify,
           row.merchantAddress,
-          integralWei, 
+          integralWei,
           status
         ]
       ],
@@ -244,9 +273,9 @@ const handleSpecsSubmit = (data: any) => {
 const getQueryParams = () => ({
   ...pageData.searchForm,
   current: pageData.tableParams.pagination.currentPage,
-  size: pageData.tableParams.pagination.pageSize
+  size: pageData.tableParams.pagination.pageSize,
+  classify: pageData.classify
 });
-
 // 获取表格数据
 const _loadData = (page?: number) => {
   pageData.tableParams.list = []
@@ -326,8 +355,9 @@ onMounted(() => {
       @search-form="_updateSearchFormData" @search="_searchForm" @reset="_resetSearchForm" />
     <table-buttons :size="pageData.btnOpts.size" :left-btns="pageData.btnOpts.leftBtns"
       :right-btns="pageData.btnOpts.rightBtns" @click="btnClickHandle" />
-    <el-table :data="pageData.tableParams.list" stripe :loading="pageData.tableParams.loading">
+    <status-tabs v-model="pageData.classify" :tabs="pageData.tabsOpts" @change="handleClick" />
 
+    <el-table :data="pageData.tableParams.list" stripe :loading="pageData.tableParams.loading">
       <!-- 展开行 -->
       <el-table-column type="expand">
         <template #default="props">
@@ -352,11 +382,11 @@ onMounted(() => {
             <el-table-column label="操作" width="160" fixed="right">
               <template #default="scope">
                 <el-button type="primary" size="small" @click="handleAddItem(props.row, scope.row)">
-                  编辑 
+                  编辑
                 </el-button>
                 <el-button type="primary" size="small" :loading="pageData.switchLoading"
                   @click="handleSpecsStatus(props.row, scope.row)">
-                  {{ scope.row.status==true ? '下链' : "上链" }}
+                  {{ scope.row.status == true ? '下链' : "上链" }}
                 </el-button>
               </template>
             </el-table-column>
@@ -387,10 +417,17 @@ onMounted(() => {
         </template>
       </el-table-column>
     </el-table>
+
+    <div style="margin-top: 10px;display: flex;justify-content: flex-end;">
+      <el-pagination :background="pageData.tableParams.pagination.background"
+        layout="total, sizes, prev, pager, next, jumper" :page-size="pageData.tableParams.pagination.pageSize"
+        :page-sizes="pageData.tableParams.pagination.pageSizes" :total="pageData.tableParams.pagination.total"
+        @size-change="handleChangePageSize" @current-change="handleChangeCurrentPage" />
+    </div>
+
     <!-- 商品弹窗组件 -->
     <GoodsInfo v-model:visible="pageData.dialogVisible" :initialData="pageData.currentProduct"
       :merChatList="pageData.merChatList" @submit="handleSubmit" />
-
 
     <GoodsSpecsDialog :visible="pageData.specsDialogVisible" :classifyId="pageData.classifyId"
       :initialData="pageData.currentSpecs" @submit="handleSpecsSubmit"

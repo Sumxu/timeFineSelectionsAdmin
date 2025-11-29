@@ -6,8 +6,8 @@ import { PureTable } from "@pureadmin/table";
 import * as $userApi from "@/api/member/user";
 import message from "@/utils/message";
 import { formatAddress, formatDate, fromWei, callContractMethod } from "@/utils/wallet";
-import { levelOptions, userLevelOptions, userTypeMap } from "@/constants/constants";
-import { userlevelConvert, levelConvert, userTypeConvert } from "@/constants/convert";
+import { levelOptions, userLevelOptions, userTypeMap, userTypeOptions } from "@/constants/constants";
+import { userlevelConvert, levelConvert, userTypeConvert, } from "@/constants/convert";
 import { ElMessageBox, ElSelect, ElOption } from "element-plus";
 import erc20Abi from "@/abi/erc20-abi";
 import { contractAddress } from "@/config/contract";
@@ -27,10 +27,42 @@ const pageData: any = reactive({
       label: "上级地址",
       prop: "parentAddress",
       placeholder: "请输入上级地址"
-    }
+    },
+    {
+      type: "select",
+      label: "用户等级",
+      prop: "level",
+      placeholder: "请选择用户等级",
+      dataSourceKey: "userLevelOptions",
+      options: {
+        filterable: true,
+        keys: {
+          prop: "value",
+          value: "value",
+          label: "label"
+        }
+      }
+    },
+    {
+      type: "select",
+      label: "用户类型",
+      prop: "userType",
+      placeholder: "请选择用户类型",
+      dataSourceKey: "userTypeOptions",
+      options: {
+        filterable: true,
+        keys: {
+          prop: "value",
+          value: "value",
+          label: "label"
+        }
+      }
+    },
   ],
   dataSource: {
-    levelOptions: levelOptions
+    levelOptions: levelOptions,
+    userLevelOptions: userLevelOptions,
+    userTypeOptions: userTypeOptions
   },
   permission: {
     query: ["defi:user:page"]
@@ -55,7 +87,7 @@ const pageData: any = reactive({
         prop: "parentAddress",
         width: "370px"
       },
-      { label: "当前等级", prop: "level", minWidth: "120px" },
+      { label: "当前等级", prop: "level", minWidth: "120px", slot: "levelScope" },
       { label: "用户类型", prop: "userType", minWidth: "120px", slot: "userTypeScope" },
       {
         label: "商家名称",
@@ -157,7 +189,7 @@ const btnClickHandle = (key: string) => {
 const handleUpdateLevel = (row: any) => {
   const status = ref<string | number>(row.level);
   const userStatus = ref<string | number>(row.level);
-  const address=row.address
+  const address = row.address
   ElMessageBox({
     title: "修改等级",
     message: () =>
@@ -213,7 +245,7 @@ const handleUpdateLevel = (row: any) => {
             contractAddress.Store_Address,
             erc20Abi.abi,
             "setLevel",
-            [address,Number(userStatus.value)],
+            [address, Number(userStatus.value)],
             true
           )
           if (res) {
@@ -271,17 +303,17 @@ onMounted(() => _loadData());
       stripe :loading="pageData.tableParams.loading" :pagination="pageData.tableParams.pagination"
       @page-current-change="handleChangeCurrentPage" @page-size-change="handleChangePageSize">
       <template #levelScope="scope">
-        <span>{{ levelConvert(scope.row[scope.column.property]) }}</span>
+        <span>{{ userlevelConvert(scope.row[scope.column.property]) }}</span>
       </template>
       <template #userTypeScope="scope">
         <span>{{ userTypeConvert(scope.row[scope.column.property]) }}</span>
       </template>
 
       <template #createTimeScope="scope">
-        <span>{{ formatDate(scope.row[scope.column.property]).dateTime }}</span>
+        <span>{{ formatDate(scope.row[scope.column.property]).dateTime || '' }}</span>
       </template>
 
-      
+
       <template #operation="{ row }">
         <el-link type="primary" @click="handleUpdateLevel(row)">修改等级</el-link>
       </template>
